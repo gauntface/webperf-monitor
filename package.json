@@ -1,0 +1,11 @@
+{
+  "name": "pagespeed-monitor",
+  "description": "A simple tool which crawls a sitemap and gets a PageSpeed Insight score for each page",
+  "version": "0.0.1",
+  "dependencies": {
+    "pagespeed-monitor": "0.0.1"
+  },
+  "devDependencies": {
+    
+  }
+}
