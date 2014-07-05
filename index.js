@@ -18,11 +18,11 @@ var argv = require('minimist')(process.argv.slice(2));
 
 var printHelp = function() {
     console.log([
-        'pagespeed-monitor-cli',
+        'webperf-monitor',
         pkg.description,
         '',
         'Usage:',
-        '    $ pagespeed-monitor-cli <url-to-sitemap>'
+        '    $ webperf-monitor <url-to-sitemap>'
     ].join('\n'));
 };
 
