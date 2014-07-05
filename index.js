@@ -8,21 +8,11 @@
 
 'use strict';
 
-/**function getURLFromUser() {
-	var rl = readline.createInterface({
-	  input: process.stdin,
-	  output: process.stdout
-	});
-	var index = 0;
-	rl.question("What is the URL for the sitemap you'd like to crawl? ", function(sitemapUrl) {
-		rl.close();
-	});
-}
-
-getURLFromUser();**/
 var pagespeedMonitor = require('./../pagespeed-monitor');
+var resultsModel = require('./model/psiresultsmodel.js');
 var fs = require('fs');
 var pkg = require( './package.json' );
+var dbHelper = require('./db/db-helper.js');
 
 var argv = require('minimist')(process.argv.slice(2));
 
@@ -32,8 +22,7 @@ var printHelp = function() {
         pkg.description,
         '',
         'Usage:',
-        '    $ pagespeed-monitor-cli <url-to-sitemap>',
-        '        -config <relative path to config file>'
+        '    $ pagespeed-monitor-cli <url-to-sitemap>'
     ].join('\n'));
 };
 
@@ -47,47 +36,109 @@ if(argv.h || argv.help) {
     return;
 }
 
-var configFilePath = argv.config || './config/config.js';
+var config = require('./config/config.js');
 
-var onResultCb;
-var onErrorCb;
-var onCompleteCb;
-var sitemapUrl;
-if(argv.cli) {
-    onResultCb = function(url, type, data) {
-		console.log('---------------------------------');
-		if(data.score < 85) {
-			console.log('FAIL');
-			console.log('URL: '+url);
-			console.log('Score: '+data.score);
+var sitemapUrl = config.sitemapURL;
 
-			var ruleResults = data.formattedResults.ruleResults;
-			console.log('Things to improve:');
-			for(var ruleName in ruleResults) {
-				var ruleResult = ruleResults[ruleName];
-				if(ruleResult.ruleImpact > 0) {
-					console.log('    - '+ruleResult.localizedRuleName);
-					console.log('      '+ruleResult.ruleImpact);
-				}
+dbHelper.setConfig(config);
+dbHelper.openDb(function(err, dbConnection) {
+	if(err) {
+		console.log('Unable to establish database connection: '+err);
+		return;
+	}
+
+	startNewRun(sitemapUrl, dbConnection);
+});
+
+function startNewRun(sitemapUrl, dbConnection) {
+	var params = {
+		status: 'pending',
+		message: ''
+	};
+
+	dbConnection.query('INSERT INTO runs SET ?, start_time=(now())', params,
+		function(err, result) {
+			dbConnection.destroy();
+
+            if (err) {
+                errorCb(err);
+                return;
+            }
+
+            var runId = result.insertId;
+            performCrawl(runId, sitemapUrl);
+		});
+}
+
+function performCrawl(runId, sitemapUrl) {
+	var onErrorCb = function(err) {
+		console.log('onErrorCb');
+		var msg = 'There was an error while running the script: '+err;
+		
+		var params = {
+			'status': 'failed',
+			'message': msg,
+			'end_time': '(now())'
+		};
+
+		dbHelper.openDb(function(err, dbConnection) {
+			if(err) {
+				console.log('Unable to establish database connection: '+err);
+				process.exit();
+				return;
 			}
-		} else {
-			console.log('PASS');
-			console.log('URL: '+url);
-			console.log('Score: '+data.score);
-		}
-		console.log('---------------------------------');
-		console.log('');
-	};
-	onErrorCb = function(err) {
-		console.log('There was an error while running the script '+err);
-		process.exit();
-	};
-	onCompleteCb = function() {
-		console.log('The run completed successfully');
-		process.exit();
-	};
 
-	sitemapUrl = argv._[0];
+			dbConnection.query('UPDATE runs SET ? WHERE run_id = ?', [params, runId], 
+		    	function(err, result){
+		    		dbConnection.destroy();
+		    		if (err) {
+		                console.log('Unable to update run entry with error status and end time: '+err);
+		            }
+
+		            process.exit();
+		    	});
+		});
+	};
+	var onCompleteCb = function() {
+		var msg = 'The run completed successfully';
+
+		var params = {
+			'status': 'successful',
+			'message': msg
+		};
+
+		dbHelper.openDb(function(err, dbConnection) {
+			if(err) {
+				console.log('Unable to establish database connection: '+err);
+				process.exit();
+				return;
+			}
+
+			dbConnection.query('UPDATE runs SET ?, end_time=(now()) WHERE run_id = ?', [params, runId], 
+		    	function(err, result){
+		    		dbConnection.destroy();
+		    		if (err) {
+		                console.log('Unable to update run entry with status and end time: '+err);
+		            }
+
+		            process.exit();
+		    	});
+		});
+	};
+	var onResultCb = function(url, type, data) {
+		if(type !== 'psi') {
+			// This is in case we end up supporting
+			// something other than pagespeed insights
+			return;
+		}
+
+		resultsModel.addResult(runId, url, data, function(err){
+			if(err) {
+				// What can we do here? I don't believe we
+				// can halt execution apart from process.exit
+			}
+		});
+	};
 
 	pagespeedMonitor.on('onResult', onResultCb);
 
@@ -96,60 +147,4 @@ if(argv.cli) {
 	pagespeedMonitor.on('onCompleted', onCompleteCb);
 
 	pagespeedMonitor.crawlSitemap(sitemapUrl);
-} else {
-	var dbHelper = require('./db/db-helper.js');
-	var config = require(configFilePath);
-
-	sitemapUrl = config.sitemapURL;
-
-	dbHelper.setConfig(config);
-	dbHelper.openDb(function(err, connection) {
-		onErrorCb = function(err) {
-			var msg = 'There was an error while running the script '+err;
-			
-			console.log('Error: '+err);
-
-			if(connection) {
-				connection.end();
-			}
-			process.exit();
-		};
-
-		if(err) {
-			onErrorCb(err);
-			return;
-		}
-
-		onCompleteCb = function() {
-			var msg = 'The run completed successfully';
-
-			connection.end();
-			process.exit();
-		};
-		onResultCb = function(url, type, data) {
-			connection.query('SELECT 1 + 1 AS solution', function(err, rows, fields) {
-			  if (onErrorCb) {
-			  	onErrorCb(err);
-			  }
-
-			  console.log('The solution is: ', rows[0].solution);
-			});
-
-			connection.query('SELECT 1 + 1 AS solution', function(err, rows, fields) {
-			  if (onErrorCb) {
-			  	onErrorCb(err);
-			  }
-
-			  console.log('The solution is: ', rows[0].solution);
-			});
-		};
-
-		pagespeedMonitor.on('onResult', onResultCb);
-
-		pagespeedMonitor.on('onError', onErrorCb);
-
-		pagespeedMonitor.on('onCompleted', onCompleteCb);
-
-		pagespeedMonitor.crawlSitemap(sitemapUrl);
-	});
 }
