@@ -3,11 +3,30 @@
   "description": "A simple tool which crawls a sitemap and gets a PageSpeed Insight score for each page",
   "version": "0.0.1",
   "dependencies": {
-    "pagespeed-monitor": "0.0.1",
+    "webperf-lib-psi": "~0.0.1",
     "minimist": "~0.2.0",
-    "mysql": "2.0.x"
+    "mysql": "~2.0.x",
+    "when": "~3.3.1"
   },
-  "devDependencies": {
-    
-  }
+  "devDependencies": {},
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/gauntface/webperf-lib-psi"
+  },
+  "keywords": [
+    "Web",
+    "Performance",
+    "Pagespeed",
+    "Insights"
+  ],
+  "author": "Matt Gaunt <matt@gauntface.co.uk> (https://gauntface.com/)",
+  "license": "apache",
+  "bugs": {
+    "url": "https://github.com/gauntface/webperf-lib-psi/issues"
+  },
+  "homepage": "https://github.com/gauntface/webperf-lib-psi"
 }

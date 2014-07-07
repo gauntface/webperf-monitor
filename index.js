@@ -8,11 +8,11 @@
 
 'use strict';
 
-var pagespeedMonitor = require('./../pagespeed-monitor');
+var PSILib = require('webperf-lib-psi');
 var resultsModel = require('./model/psiresultsmodel.js');
+var cronRunModel = require('./model/cronrunmodel.js');
 var fs = require('fs');
 var pkg = require( './package.json' );
-var dbHelper = require('./db/db-helper.js');
 
 var argv = require('minimist')(process.argv.slice(2));
 
@@ -38,113 +38,70 @@ if(argv.h || argv.help) {
 
 var config = require('./config/config.js');
 
-var sitemapUrl = config.sitemapURL;
+startNewRun(config.sitemapURL);
 
-dbHelper.setConfig(config);
-dbHelper.openDb(function(err, dbConnection) {
-	if(err) {
-		console.log('Unable to establish database connection: '+err);
-		return;
-	}
-
-	startNewRun(sitemapUrl, dbConnection);
-});
-
-function startNewRun(sitemapUrl, dbConnection) {
-	var params = {
-		status: 'pending',
-		message: ''
-	};
-
-	dbConnection.query('INSERT INTO runs SET ?, start_time=(now())', params,
-		function(err, result) {
-			dbConnection.destroy();
-
-            if (err) {
-                errorCb(err);
-                return;
-            }
-
-            var runId = result.insertId;
-            performCrawl(runId, sitemapUrl);
-		});
+function startNewRun(sitemapUrl) {
+	cronRunModel.addNewRunEntry(config)
+		.then(function(result){
+			var runId = result;
+			console.log('Added new run ['+runId+']');
+			performCrawl(runId, sitemapUrl);
+		}).catch(function(err) {
+			console.log('webperf-monitor startNewRun() Error: '+err);
+			process.exit();
+  		});
+	
 }
 
 function performCrawl(runId, sitemapUrl) {
 	var onErrorCb = function(err) {
-		console.log('onErrorCb');
 		var msg = 'There was an error while running the script: '+err;
-		
-		var params = {
-			'status': 'failed',
-			'message': msg,
-			'end_time': '(now())'
-		};
 
-		dbHelper.openDb(function(err, dbConnection) {
-			if(err) {
-				console.log('Unable to establish database connection: '+err);
+		cronRunModel.endRunWithError(runId, msg, config)
+			.then(function(){
+				console.log('Run finished with an error: '+err);
 				process.exit();
-				return;
-			}
-
-			dbConnection.query('UPDATE runs SET ? WHERE run_id = ?', [params, runId], 
-		    	function(err, result){
-		    		dbConnection.destroy();
-		    		if (err) {
-		                console.log('Unable to update run entry with error status and end time: '+err);
-		            }
-
-		            process.exit();
-		    	});
-		});
+			}).catch(function(err) {
+				console.log('webperf-monitor performCrawl() Error: '+err);
+				process.exit();
+	  		});
 	};
 	var onCompleteCb = function() {
-		var msg = 'The run completed successfully';
+		var msg = 'Run completed successfully';
 
-		var params = {
-			'status': 'successful',
-			'message': msg
-		};
-
-		dbHelper.openDb(function(err, dbConnection) {
-			if(err) {
-				console.log('Unable to establish database connection: '+err);
+		cronRunModel.endRunSuccessfully(runId, msg, config)
+			.then(function(){
+				console.log('Run finished successfully');
 				process.exit();
-				return;
-			}
-
-			dbConnection.query('UPDATE runs SET ?, end_time=(now()) WHERE run_id = ?', [params, runId], 
-		    	function(err, result){
-		    		dbConnection.destroy();
-		    		if (err) {
-		                console.log('Unable to update run entry with status and end time: '+err);
-		            }
-
-		            process.exit();
-		    	});
-		});
+			}).catch(function(err) {
+				console.log('webperf-monitor performCrawl() Error: '+err);
+				process.exit();
+	  		});
 	};
 	var onResultCb = function(url, type, data) {
+		console.log('onResult: '+url);
 		if(type !== 'psi') {
 			// This is in case we end up supporting
 			// something other than pagespeed insights
+			// But aren't quite handling it yet
 			return;
 		}
 
-		resultsModel.addResult(runId, url, data, function(err){
-			if(err) {
+		resultsModel.addResult(runId, url, data)
+			.then(function(){
+			}).catch(function(err) {
 				// What can we do here? I don't believe we
 				// can halt execution apart from process.exit
-			}
-		});
+
+				console.log('webperf-monitor performCrawl() Error: '+err);
+	  		});
 	};
 
-	pagespeedMonitor.on('onResult', onResultCb);
+	PSILib.on('onResult', onResultCb);
 
-	pagespeedMonitor.on('onError', onErrorCb);
+	PSILib.on('onError', onErrorCb);
 
-	pagespeedMonitor.on('onCompleted', onCompleteCb);
+	PSILib.on('onCompleted', onCompleteCb);
 
-	pagespeedMonitor.crawlSitemap(sitemapUrl);
+	PSILib.crawlSitemap(sitemapUrl);
 }

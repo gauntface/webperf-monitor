@@ -4,4 +4,4 @@ exports.dbURL = {
  		password : '<password>',
  		port: 8889
  	};
-exports.dbName = 'pagespeedmonitor';
+exports.dbName = 'webperfmonitor';
