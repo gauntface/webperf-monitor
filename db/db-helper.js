@@ -12,7 +12,9 @@ var tables = [
     'status TEXT NOT NULL,' +
     'message TEXT,' +
     'start_time DATETIME,'+
-    'end_time DATETIME'+
+    'end_time DATETIME,'+
+    'mean_score DECIMAL,'+
+    'median_score DECIMAL'+
     ')',
     'CREATE TABLE IF NOT EXISTS run_entries ('+
     'entry_id INT NOT NULL AUTO_INCREMENT,'+

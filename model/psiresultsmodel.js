@@ -5,7 +5,7 @@ var config = require('./../config/config.js');
 exports.addResult = function(runId, url, data) {
 	dbHelper.setConfig(config);
 
-	return when.promise(function(resolve, reject, notify){
+	return when.promise(function(resolve, reject, notify) {
         dbHelper.openDb(function(err, dbConnection) {
 			if(err) {
 				dbConnection.destroy();

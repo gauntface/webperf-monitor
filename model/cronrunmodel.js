@@ -23,21 +23,76 @@ function insertNewRun(dbConnection, resolve, reject) {
 }
 
 function finishRunSuccessfully(runId, msg, dbConnection, resolve, reject) {
-    var params = {
-        'status': 'successful',
-        'message': msg
-    };
-
-    dbConnection.query('UPDATE runs SET ?, end_time=(now()) WHERE run_id = ?', [params, runId], 
-        function(err, result){
-            dbConnection.destroy();
-            if (err) {
-                reject('Unable to update run entry with status and end time: '+err);
+    getMeanRunScore(runId, dbConnection, function(err, meanScore) {
+        if(err) {
+            reject('Unable to calculate the mean score: '+err);
+            return;
+        }
+        getMedianRunScore(runId, dbConnection, function(err, medianScore) {
+            if(err) {
+                reject('Unable to calculate the media score: '+err);
+                return;
             }
 
-            // TODO: Confirm results affected > 0
+            var params = {
+                'status': 'successful',
+                'message': msg,
+                'mean_score': meanScore,
+                'median_score': medianScore
+            };
 
-            resolve();
+            dbConnection.query('UPDATE runs SET ?, end_time=(now()) WHERE run_id = ?', [params, runId], 
+                function(err, result){
+                    dbConnection.destroy();
+                    if (err) {
+                        reject('Unable to update run entry with status and end time: '+err);
+                        return;
+                    }
+
+                    // TODO: Confirm results affected > 0
+
+                    resolve();
+                });
+        });
+    });
+}
+
+function getMeanRunScore(runId, dbConnection, cb) {
+    dbConnection.query('SELECT AVG(score) as mean_val FROM run_entries WHERE run_id = ?', [runId], 
+        function(err, result){
+            if (err) {
+                dbConnection.destroy();
+                cb('Unable to update run entry with status and end time: '+err);
+            }
+
+            cb(null, result[0].mean_val);
+        });
+}
+
+function getMedianRunScore(runId, dbConnection, cb) {
+    var sqlQuery = 'SELECT avg(t1.score) as median_val FROM (' +
+                    'SELECT @rownum:=@rownum+1 as `row_number`, run_entries.score ' +
+                    '  FROM run_entries,  (SELECT @rownum:=0) r ' +
+                    '  WHERE run_id = ? ' +
+                    '  ORDER BY run_entries.score ' +
+                    ') as t1, '+
+                    '(' +
+                    '  SELECT count(*) as total_rows ' +
+                    '  FROM run_entries ' +
+                    '  WHERE run_id = ? ' +
+                    ') as t2 ' +
+                    'WHERE 1 ' +
+                    'AND t1.row_number in ( floor((total_rows+1)/2), floor((total_rows+2)/2) );';
+
+    dbConnection.query(sqlQuery, [runId, runId], 
+        function(err, result){
+            JSON.stringify(result);
+            if (err) {
+                dbConnection.destroy();
+                cb('Unable to update run entry with status and end time: '+err);
+            }
+
+            cb(null, result[0].median_val);
         });
 }
 
