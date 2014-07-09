@@ -1,10 +1,7 @@
 var when = require('when');
 var dbHelper = require('./../db/db-helper.js');
-var config = require('./../config/config.js');
 
 exports.addResult = function(runId, url, data) {
-	dbHelper.setConfig(config);
-
 	return when.promise(function(resolve, reject, notify) {
         dbHelper.openDb(function(err, dbConnection) {
 			if(err) {

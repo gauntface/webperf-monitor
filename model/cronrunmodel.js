@@ -114,9 +114,7 @@ function finishRunWithError(runId, msg, dbConnection, resolve, reject) {
         });
 }
 
-exports.addNewRunEntry = function(config) {
-    dbHelper.setConfig(config);
-
+exports.addNewRunEntry = function() {
     return when.promise(function(resolve, reject, notify){
         // do some (asynchronous) work; the promise will be pending meanwhile
         // if the operation is fulfilled successfully, call resolve(operationResult);
@@ -133,9 +131,7 @@ exports.addNewRunEntry = function(config) {
     });
 };
 
-exports.endRunSuccessfully = function(runId, msg, config) {
-    dbHelper.setConfig(config);
-
+exports.endRunSuccessfully = function(runId, msg) {
     return when.promise(function(resolve, reject, notify){
         // do some (asynchronous) work; the promise will be pending meanwhile
         // if the operation is fulfilled successfully, call resolve(operationResult);
@@ -152,9 +148,7 @@ exports.endRunSuccessfully = function(runId, msg, config) {
     });
 };
 
-exports.endRunWithError = function(runId, msg, config) {
-    dbHelper.setConfig(config);
-
+exports.endRunWithError = function(runId, msg) {
     return when.promise(function(resolve, reject, notify){
         // do some (asynchronous) work; the promise will be pending meanwhile
         // if the operation is fulfilled successfully, call resolve(operationResult);

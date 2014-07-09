@@ -1,1 +1,3 @@
-config/config.js
+config
+node_modules
+.config

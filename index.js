@@ -7,10 +7,6 @@
  */
 
 'use strict';
-
-var PSILib = require('webperf-lib-psi');
-var resultsModel = require('./model/psiresultsmodel.js');
-var cronRunModel = require('./model/cronrunmodel.js');
 var fs = require('fs');
 var pkg = require( './package.json' );
 
@@ -22,7 +18,7 @@ var printHelp = function() {
         pkg.description,
         '',
         'Usage:',
-        '    $ webperf-monitor <url-to-sitemap>'
+        '    $ webperf-monitor -c <path-to-config>'
     ].join('\n'));
 };
 
@@ -36,12 +32,51 @@ if(argv.h || argv.help) {
     return;
 }
 
-var config = require('./config/config.js');
+var configFilePath = './config/config.js'
+var customConfigPathFile = './.config/';
+var customConfigFileName = 'settings';
+
+if(argv.c || argv.config) {
+	if(!fs.existsSync(customConfigPathFile)) {
+		fs.mkdirSync(customConfigPathFile);
+	}
+
+    fs.writeFileSync(customConfigPathFile+customConfigFileName, argv.config);
+	configFilePath = argv.c || argv.config;
+} else {
+	if(fs.existsSync(customConfigPathFile+customConfigFileName)) {
+		configFilePath = fs.readFileSync(customConfigPathFile+customConfigFileName);
+	}
+}
+
+if(configFilePath.indexOf('.') == 0) {
+	configFilePath = configFilePath.substring(1);
+	configFilePath = __dirname + configFilePath;
+}
+
+console.log('Looking for config file at '+configFilePath);
+
+var config;
+try {
+	config = require(configFilePath);
+} catch(exception) {}
+
+if(!config) {
+	console.error('No config file could be found.');
+	process.exit();
+	return;
+} else {
+	GLOBAL.configFile = configFilePath;
+}
+
+var PSILib = require('webperf-lib-psi');
+var resultsModel = require('./model/psiresultsmodel.js');
+var cronRunModel = require('./model/cronrunmodel.js');
 
 startNewRun(config.sitemapURL);
 
 function startNewRun(sitemapUrl) {
-	cronRunModel.addNewRunEntry(config)
+	cronRunModel.addNewRunEntry()
 		.then(function(result){
 			var runId = result;
 			console.log('Added new run ['+runId+']');
@@ -50,14 +85,13 @@ function startNewRun(sitemapUrl) {
 			console.log('webperf-monitor startNewRun() Error: '+err);
 			process.exit();
   		});
-	
 }
 
 function performCrawl(runId, sitemapUrl) {
 	var onErrorCb = function(err) {
 		var msg = 'There was an error while running the script: '+err;
 
-		cronRunModel.endRunWithError(runId, msg, config)
+		cronRunModel.endRunWithError(runId, msg)
 			.then(function(){
 				console.log('Run finished with an error: '+err);
 				process.exit();
@@ -69,7 +103,7 @@ function performCrawl(runId, sitemapUrl) {
 	var onCompleteCb = function() {
 		var msg = 'Run completed successfully';
 
-		cronRunModel.endRunSuccessfully(runId, msg, config)
+		cronRunModel.endRunSuccessfully(runId, msg)
 			.then(function(){
 				console.log('Run finished successfully');
 				process.exit();

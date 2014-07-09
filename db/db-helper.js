@@ -1,4 +1,5 @@
 var mysql = require('mysql');
+var config = require(GLOBAL.configFile);
 
 var tables = [
     'CREATE TABLE IF NOT EXISTS urls (' +
@@ -32,12 +33,6 @@ var tables = [
     'rule_impact DECIMAL NOT NULL'+
     ')'
 ];
-
-var config = null;
-
-exports.setConfig = function(c) {
-    config = c;
-};
 
 exports.openDb = function(cb) {
     if(config == null) {
