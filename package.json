@@ -1,9 +1,9 @@
 {
   "name": "webperf-monitor",
   "description": "A simple tool which crawls a sitemap and gets a PageSpeed Insight score for each page",
-  "version": "0.0.4",
+  "version": "0.0.5",
   "bin": {
-    "webperfmonitor": "bin/cli.js"
+    "webperfmonitor": "cli.js"
   },
   "dependencies": {
     "webperf-lib-psi": "~0.0.3",

@@ -7,66 +7,26 @@
  */
 
 'use strict';
-var fs = require('fs');
-var pkg = require( './package.json' );
 
-var argv = require('minimist')(process.argv.slice(2));
+module.exports = function(configFilePath) {
+	var config;
+	try {
+		config = require(configFilePath);
+	} catch(exception) {}
 
-var printHelp = function() {
-    console.log([
-        'webperf-monitor',
-        pkg.description,
-        '',
-        'Usage:',
-        '    $ webperf-monitor -c <path-to-config>'
-    ].join('\n'));
+	if(!config) {
+		console.error('No config file could be found.');
+		process.exit();
+		return;
+	}
+	// Stash for other module to use
+	GLOBAL.configFile = configFilePath;
+
+	startNewRun(config.sitemapURL);
 };
 
-if(argv.v || argv.version) {
-    console.log(pkg.version);
-    return;
-}
-
-if(argv.h || argv.help) {
-    printHelp();
-    return;
-}
-
-var configFilePath = './config/config.js'
-var customConfigPathFile = './.config/';
-var customConfigFileName = 'settings';
-
-if(argv.c || argv.config) {
-    configFilePath = argv.c || argv.config;
-}
-
-if(configFilePath.indexOf('.') == 0) {
-	configFilePath = configFilePath.substring(1);
-	configFilePath = __dirname + configFilePath;
-}
-
-console.log('Looking for config file at '+configFilePath);
-
-var config;
-try {
-	config = require(configFilePath);
-} catch(exception) {}
-
-if(!config) {
-	console.error('No config file could be found.');
-	process.exit();
-	return;
-} else {
-	GLOBAL.configFile = configFilePath;
-}
-
-var PSILib = require('webperf-lib-psi');
-var resultsModel = require('./model/psiresultsmodel.js');
-var cronRunModel = require('./model/cronrunmodel.js');
-
-startNewRun(config.sitemapURL);
-
 function startNewRun(sitemapUrl) {
+	var cronRunModel = require('./model/cronrunmodel.js');
 	cronRunModel.addNewRunEntry()
 		.then(function(result){
 			var runId = result;
@@ -79,6 +39,9 @@ function startNewRun(sitemapUrl) {
 }
 
 function performCrawl(runId, sitemapUrl) {
+	var PSILib = require('webperf-lib-psi');
+	var resultsModel = require('./model/psiresultsmodel.js');
+	
 	var onErrorCb = function(err) {
 		var msg = 'There was an error while running the script: '+err;
 
