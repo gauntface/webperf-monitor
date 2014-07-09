@@ -37,16 +37,7 @@ var customConfigPathFile = './.config/';
 var customConfigFileName = 'settings';
 
 if(argv.c || argv.config) {
-	if(!fs.existsSync(customConfigPathFile)) {
-		fs.mkdirSync(customConfigPathFile);
-	}
-
-    fs.writeFileSync(customConfigPathFile+customConfigFileName, argv.config);
-	configFilePath = argv.c || argv.config;
-} else {
-	if(fs.existsSync(customConfigPathFile+customConfigFileName)) {
-		configFilePath = fs.readFileSync(customConfigPathFile+customConfigFileName);
-	}
+    configFilePath = argv.c || argv.config;
 }
 
 if(configFilePath.indexOf('.') == 0) {
