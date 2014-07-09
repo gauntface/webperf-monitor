@@ -1,5 +1,4 @@
 var mysql = require('mysql');
-var config = require(GLOBAL.configFile);
 
 var tables = [
     'CREATE TABLE IF NOT EXISTS urls (' +
@@ -35,6 +34,8 @@ var tables = [
 ];
 
 exports.openDb = function(cb) {
+    var config = require(GLOBAL.configFile);
+    
     if(config == null) {
         cb('No Config Available to load the database');
         return;

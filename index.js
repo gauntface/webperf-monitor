@@ -7,19 +7,12 @@
  */
 
 'use strict';
+var cronRunModel = require('./model/cronrunmodel.js');
+var PSILib = require('webperf-lib-psi');
+var resultsModel = require('./model/psiresultsmodel.js');
 
-module.exports = function(configFilePath) {
-	var config;
-	try {
-		config = require(configFilePath);
-	} catch(exception) {}
-
-	if(!config) {
-		console.error('No config file could be found.');
-		process.exit();
-		return;
-	}
-	// Stash for other module to use
+module.exports = function(configFilePath, config) {
+	// Stash for other modules to use
 	GLOBAL.configFile = configFilePath;
 
 	startNewRun(config.sitemapURL);
@@ -27,7 +20,6 @@ module.exports = function(configFilePath) {
 
 function startNewRun(sitemapUrl) {
 	console.log('Setting up run for sitemap: '+sitemapUrl);
-	var cronRunModel = require('./model/cronrunmodel.js');
 	cronRunModel.addNewRunEntry()
 		.then(function(result){
 			var runId = result;
@@ -40,9 +32,6 @@ function startNewRun(sitemapUrl) {
 }
 
 function performCrawl(runId, sitemapUrl) {
-	var PSILib = require('webperf-lib-psi');
-	var resultsModel = require('./model/psiresultsmodel.js');
-
 	var onErrorCb = function(err) {
 		var msg = 'There was an error while running the script: '+err;
 

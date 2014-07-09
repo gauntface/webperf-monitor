@@ -42,6 +42,17 @@ if(configFilePath.indexOf('.') == 0) {
 
 console.log('Looking for config file at '+configFilePath);
 
+var config;
+try {
+    config = require(configFilePath);
+} catch(exception) {}
+
+if(!config) {
+    console.error('No config file could be found.');
+    process.exit();
+    return;
+}
+
 var webperfmonitor = require('./index');
 
-new webperfmonitor(configFilePath);
+new webperfmonitor(configFilePath, config);
