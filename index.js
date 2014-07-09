@@ -26,6 +26,7 @@ module.exports = function(configFilePath) {
 };
 
 function startNewRun(sitemapUrl) {
+	console.log('Setting up run for sitemap: '+sitemapUrl);
 	var cronRunModel = require('./model/cronrunmodel.js');
 	cronRunModel.addNewRunEntry()
 		.then(function(result){
@@ -41,7 +42,7 @@ function startNewRun(sitemapUrl) {
 function performCrawl(runId, sitemapUrl) {
 	var PSILib = require('webperf-lib-psi');
 	var resultsModel = require('./model/psiresultsmodel.js');
-	
+
 	var onErrorCb = function(err) {
 		var msg = 'There was an error while running the script: '+err;
 
