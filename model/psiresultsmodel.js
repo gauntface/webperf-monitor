@@ -141,5 +141,5 @@ function addRulesToDb(entryId, ruleArray, index, dbConnection, resolve, reject) 
             }
 
             addRulesToDb(entryId, ruleArray, index+1, dbConnection, resolve, result);
-    	});
+    	}.bind(this));
 }
