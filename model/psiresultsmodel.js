@@ -5,7 +5,9 @@ exports.addResult = function(runId, url, data) {
 	return when.promise(function(resolve, reject, notify) {
         dbHelper.openDb(function(err, dbConnection) {
 			if(err) {
-				dbConnection.destroy();
+				if(dbConnection) {
+					dbConnection.destroy();
+				}
 				reject('Unable to establish database connection: '+err);
 				return;
 			}
