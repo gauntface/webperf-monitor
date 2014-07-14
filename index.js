@@ -15,8 +15,14 @@ module.exports = function(configFilePath, config) {
 	// Stash for other modules to use
 	GLOBAL.configFile = configFilePath;
 
+	tryAnalytics();
 	startNewRun(config.sitemapURL);
 };
+
+function tryAnalytics() {
+	var analytics = require('./model/analytics-model.js');
+	analytics.getVisits();
+}
 
 function startNewRun(sitemapUrl) {
 	console.log('Setting up run for sitemap: '+sitemapUrl);
