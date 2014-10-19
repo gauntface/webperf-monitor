@@ -1,56 +1,57 @@
+'use strict';
+
 var googleapis = require('googleapis');
 
 // H/T to Ian Barber for his help figuring this out
 exports.getVisits = function() {
-	var config = require(GLOBAL.configFile);
-	if(!config) {
-		console.err('No config file defined.');
-		return;
-	}
+  var config = require(GLOBAL.configFile);
+  if (!config) {
+    console.err('No config file defined.');
+    return;
+  }
 
-	var SERVICE_ACCOUNT_EMAIL = config.googleServiceAccountEmail;
-	var SERVICE_ACCOUNT_KEY_FILE = config.googleServiceAccountKeyFile;
+  var SERVICE_ACCOUNT_EMAIL = config.googleServiceAccountEmail;
+  var SERVICE_ACCOUNT_KEY_FILE = config.googleServiceAccountKeyFile;
 
+  var jwt = new googleapis.auth.JWT(
+    SERVICE_ACCOUNT_EMAIL,
+    SERVICE_ACCOUNT_KEY_FILE,
+    null,
+    ['https://www.googleapis.com/auth/analytics.readonly']);
 
-	var jwt = new googleapis.auth.JWT(
-        SERVICE_ACCOUNT_EMAIL,
-        SERVICE_ACCOUNT_KEY_FILE,
-        null,
-        ['https://www.googleapis.com/auth/analytics.readonly']);
+  var client;
+  googleapis
+  .discover('analytics', 'v3')
+  .execute(function(err, data) {
+    if (err) {
+      console.log('analytics-model.js err: ' + JSON.stringify(err));
+      return;
+    }
 
-	var client;
-	googleapis
-	    .discover('analytics', 'v3')
-	    .execute(function(err, data) {
-	    	if(err) {
-	    		console.log('analytics-model.js err: '+JSON.stringify(err));
-	    		return;
-	    	}
-	    	
-	        client = data;
-	 		
-	        jwt.authorize(function(err, result) {
-	        	if(err) {
-	        		console.log('analytics-model.js err: '+JSON.stringify(err));
-	        		return;
-	        	}
+    client = data;
 
-	            client.analytics.data.ga.get({
-	                "ids": "ga:"+config.googleAnalyticsProfileId,
-	                "start-date": '2014-07-11',
-	                "end-date": '2014-07-12',
-	                "metrics": "ga:visits"
-	            })
-	            .withAuthClient(jwt)
-	            .execute(function(err, result) {
-	            	if(err) {
-	        			console.log('analytics-model.js err: '+JSON.stringify(err));
-	        			return;
-	        		}
+    jwt.authorize(function(err, result) {
+      if (err) {
+        console.log('analytics-model.js err: ' + JSON.stringify(err));
+        return;
+      }
 
-	            	console.log('Result: '+JSON.stringify(result));
-	            });
-	        });
-	    });
+      client.analytics.data.ga.get({
+				'ids': 'ga:' + config.googleAnalyticsProfileId,
+				'start-date': '2014-07-11',
+				'end-date': '2014-07-12',
+				'metrics': 'ga:visits'
+			})
+			.withAuthClient(jwt)
+			.execute(
+				function(err, result) {
+  if (err) {
+    console.log('analytics-model.js err: ' + JSON.stringify(err));
+    return;
+  }
+
+  console.log('Result: ' + JSON.stringify(result));
+});
+    });
+  });
 };
-
