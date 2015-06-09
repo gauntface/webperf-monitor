@@ -2,7 +2,7 @@ exports.dbURL = {
 		host     : 'localhost',
  		user     : '<username>',
  		password : '<password>',
- 		port: 8889
+ 		port: 3306
  	};
 exports.dbName = 'webperfmonitor';
 exports.sitemapURL = 'http://<URL of your Sitemap>';
