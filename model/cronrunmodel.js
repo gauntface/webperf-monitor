@@ -61,7 +61,8 @@ function finishRunSuccessfully(runId, msg, dbConnection, resolve, reject) {
 }
 
 function getMeanRunScore(runId, dbConnection, cb) {
-  dbConnection.query('SELECT AVG(score) as mean_val FROM run_entries WHERE run_id = ?', [runId],
+  dbConnection.query('SELECT AVG(speed_score) as mean_val FROM run_entries ' +
+    'WHERE run_id = ?', [runId],
     function(err, result) {
       if (err) {
         dbConnection.destroy();
@@ -74,11 +75,11 @@ function getMeanRunScore(runId, dbConnection, cb) {
 }
 
 function getMedianRunScore(runId, dbConnection, cb) {
-  var sqlQuery =  'SELECT avg(t1.score) as median_val FROM (' +
-                  'SELECT @rownum:=@rownum+1 as `row_number`, run_entries.score ' +
+  var sqlQuery =  'SELECT avg(t1.speed_score) as median_val FROM (' +
+                  'SELECT @rownum:=@rownum+1 as `row_number`, run_entries.speed_score ' +
                   '  FROM run_entries,  (SELECT @rownum:=0) r ' +
                   '  WHERE run_id = ? ' +
-                  '  ORDER BY run_entries.score ' +
+                  '  ORDER BY run_entries.speed_score ' +
                   ') as t1, ' +
                   '(' +
                   '  SELECT count(*) as total_rows ' +

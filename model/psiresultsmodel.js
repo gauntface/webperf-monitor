@@ -12,7 +12,7 @@ exports.addResult = function(runId, url, data) {
         }
         reject('Unable to establish database connection: ' + err);
         return;
-			}
+      }
 
       getURLID(url, dbConnection)
         .then(function(result) {
@@ -71,7 +71,7 @@ function getURLID(url, dbConnection) {
 }
 
 function addURLToTable(url, dbConnection, resolve, reject) {
-	// Need to add the url as it's not in the table
+  // Need to add the url as it's not in the table
   dbConnection.query('INSERT INTO urls SET ?', {url: url},
   function(err, result) {
     if (err) {
@@ -89,8 +89,42 @@ function addRunUrlEntry(runId, urlId, data, dbConnection) {
     var params = {
       'run_id': runId,
       'url_id': urlId,
-      'score': data.score
+      'speed_score': data.ruleGroups.SPEED.score,
+      'ux_score': data.ruleGroups.USABILITY.score
     };
+
+    var optionalParams = [{
+      key: 'num_of_resources',
+      value: data.pageStats.numberResources
+    }, {
+      key: 'total_request_bytes',
+      value: data.pageStats.totalRequestBytes
+    }, {
+      key: 'html_request_bytes',
+      value: data.pageStats.htmlResponseBytes
+    }, {
+      key: 'css_request_bytes',
+      value: data.pageStats.cssResponseBytes
+    }, {
+      key: 'image_request_bytes',
+      value: data.pageStats.imageResponseBytes
+    }, {
+      key: 'js_request_bytes',
+      value: data.pageStats.javascriptResponseBytes
+    }, {
+      key: 'other_request_bytes',
+      value: data.pageStats.otherResponseBytes
+    }];
+    for (var i = 0; i < optionalParams.length; i++) {
+      if (optionalParams[i].value) {
+        params[optionalParams[i].key] = optionalParams[i].value;
+      }
+    }
+
+    if (data.pageStats.totalRequestBytes) {
+      console.log('PSIResults: data.pageStats.totalRequestBytes = ' + data.pageStats.totalRequestBytes);
+    }
+
     dbConnection.query('INSERT INTO run_entries SET ?', params,
       function(err, result) {
         if (err) {
@@ -128,11 +162,11 @@ function addRulesToDb(entryId, ruleArray, index,
 
   var ruleResult = ruleArray[index];
   var params = {
-		'entry_id': entryId,
-		'rule_name': ruleResult.ruleName,
-		'localized_rule_name': ruleResult.localizedRuleName,
-		'rule_impact': ruleResult.ruleImpact
-	};
+    'entry_id': entryId,
+    'rule_name': ruleResult.ruleName,
+    'localized_rule_name': ruleResult.localizedRuleName,
+    'rule_impact': ruleResult.ruleImpact
+  };
 
   dbConnection.query('INSERT INTO rule_set SET ?', params,
     function(err, result) {

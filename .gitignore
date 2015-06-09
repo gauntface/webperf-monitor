@@ -1,3 +1,5 @@
 config
 node_modules
 .config
+*.pem
+*.p12

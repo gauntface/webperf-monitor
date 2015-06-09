@@ -13,17 +13,17 @@ var PSILib = require('webperf-lib-psi');
 var resultsModel = require('./model/psiresultsmodel.js');
 
 module.exports = function(configFilePath, config) {
-	// Stash for other modules to use
+  // Stash for other modules to use
   GLOBAL.configFile = configFilePath;
 
-  tryAnalytics();
+  //tryAnalytics();
   startNewRun(config.sitemapURL);
 };
 
-function tryAnalytics() {
+/**function tryAnalytics() {
   var analytics = require('./model/analytics-model.js');
   analytics.getVisits();
-}
+}**/
 
 function startNewRun(sitemapUrl) {
   console.log('Setting up run for sitemap: ' + sitemapUrl);
@@ -40,29 +40,30 @@ function startNewRun(sitemapUrl) {
 
 function performCrawl(runId, sitemapUrl) {
   var onErrorCb = function(err) {
-  var msg = 'There was an error while running the script: ' + err;
-  cronRunModel.endRunWithError(runId, msg)
-    .then(function() {
-      console.log('Run finished with an error: ' + err);
-      process.exit();
-    }).catch(function(err) {
-      console.log('webperf-monitor performCrawl() Error: ' + err);
-      process.exit();
-    });
-	};
+    var msg = 'There was an error while running the script: ' + err;
+    cronRunModel.endRunWithError(runId, msg)
+      .then(function() {
+        console.log('Run finished with an error: ' + err);
+        process.exit();
+      }).catch(function(err) {
+        console.log('webperf-monitor performCrawl() Error: ' + err);
+        process.exit();
+      });
+  };
 
   var onCompleteCb = function() {
-  var msg = 'Run completed successfully';
+    var msg = 'Run completed successfully';
 
-  cronRunModel.endRunSuccessfully(runId, msg)
-    .then(function() {
-      console.log('Run finished successfully');
-      process.exit();
-    }).catch(function(err) {
-      console.log('webperf-monitor performCrawl() Error: ' + err);
-      process.exit();
-    });
-	};
+    cronRunModel.endRunSuccessfully(runId, msg)
+      .then(function() {
+        console.log('Run finished successfully');
+        process.exit();
+      }).catch(function(err) {
+        console.log('webperf-monitor performCrawl() Error: ' + err);
+        process.exit();
+      });
+  };
+
   var onResultCb = function(url, type, data) {
     console.log('onResult: ' + url);
     if (type !== 'psi') {

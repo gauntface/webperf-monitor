@@ -23,7 +23,15 @@ var tables = [
     'PRIMARY KEY(entry_id),' +
     'url_id TEXT NOT NULL,' +
     'run_id INT NOT NULL,' +
-    'score INT NOT NULL' +
+    'speed_score INT NOT NULL,' +
+    'ux_score INT NOT NULL,' +
+    'num_of_resources INT DEFAULT 0 NOT NULL,' +
+    'total_request_bytes INT DEFAULT 0 NOT NULL,' +
+    'html_request_bytes INT DEFAULT 0 NOT NULL,' +
+    'css_request_bytes INT DEFAULT 0 NOT NULL,' +
+    'image_request_bytes INT DEFAULT 0 NOT NULL,' +
+    'js_request_bytes INT DEFAULT 0 NOT NULL,' +
+    'other_request_bytes INT DEFAULT 0 NOT NULL' +
     ')',
     'CREATE TABLE IF NOT EXISTS rule_set (' +
     'id INT NOT NULL AUTO_INCREMENT,' +

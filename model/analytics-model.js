@@ -24,7 +24,7 @@ exports.getVisits = function() {
   .discover('analytics', 'v3')
   .execute(function(err, data) {
     if (err) {
-      console.log('analytics-model.js err: ' + JSON.stringify(err));
+      console.log('analytics-model.js Unable to get analytics API err: ' + JSON.stringify(err));
       return;
     }
 
@@ -32,7 +32,7 @@ exports.getVisits = function() {
 
     jwt.authorize(function(err, result) {
       if (err) {
-        console.log('analytics-model.js err: ' + JSON.stringify(err));
+        console.log('analytics-model.js JWT Authorize failed err: ' + JSON.stringify(err));
         return;
       }
 
@@ -45,13 +45,13 @@ exports.getVisits = function() {
 			.withAuthClient(jwt)
 			.execute(
 				function(err, result) {
-  if (err) {
-    console.log('analytics-model.js err: ' + JSON.stringify(err));
-    return;
-  }
+          if (err) {
+            console.log('analytics-model.js Unabled to get data from analytics err: ' + JSON.stringify(err));
+            return;
+          }
 
-  console.log('Result: ' + JSON.stringify(result));
-});
+          console.log('Result: ' + JSON.stringify(result));
+        });
     });
   });
 };
