@@ -6,13 +6,16 @@
     "webperfmonitor": "app.js"
   },
   "dependencies": {
+    "body-parser": "^1.12.4",
+    "chalk": "~1.0.0",
+    "express": "^4.12.4",
+    "express-handlebars": "^2.0.1",
+    "googleapis": "~2.0.5",
+    "gpagespeed": "^0.0.7",
     "minimist": "~0.2.0",
     "mysql": "~2.0.x",
     "when": "~3.3.1",
-    "chalk": "~1.0.0",
-    "gpagespeed": "^0.0.7",
-    "xml2js": "~0.4.9",
-    "googleapis": "~2.0.5"
+    "xml2js": "~0.4.9"
   },
   "devDependencies": {},
   "main": "app.js",

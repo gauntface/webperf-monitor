@@ -7,6 +7,7 @@ var argv = require('minimist')(process.argv.slice(2));
 var pkg = require('./package.json');
 var LogHelper = require('./helper/LogHelper.js');
 var TestRunController = require('./controller/TestRunController');
+var FrontEndController = require('./controller/FrontEndController');
 
 var printHelp = function() {
   LogHelper.log([
@@ -54,3 +55,5 @@ if (!config) {
 
 var testRunController = new TestRunController(configFilePath, config);
 testRunController.startNewRun();
+
+new FrontEndController(configFilePath, config);

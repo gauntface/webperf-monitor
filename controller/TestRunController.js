@@ -1,11 +1,3 @@
-/*
- * pagespeed-monitor-cli
- * http://github.com/gauntface/pagespeed-monitor-cli
- *
- * Copyright (c) 2014 Google Inc.
- * Licensed under an Apache 2 license.
- */
-
 'use strict';
 
 var cronRunModel = require('./../model/cronrunmodel.js');
@@ -42,7 +34,6 @@ TestRunController.prototype.startNewRun = function() {
     }.bind(this))
     .catch(function(err) {
       LogHelper.log('webperf-monitor startNewRun() Error: ' + err);
-      process.exit();
     });
 };
 
@@ -52,10 +43,8 @@ TestRunController.prototype.performCrawl = function(runId, sitemapUrl) {
     cronRunModel.endRunWithError(runId, msg)
       .then(function() {
         LogHelper.log('Run finished with an error: ' + err);
-        process.exit();
       }).catch(function(err) {
         LogHelper.log('webperf-monitor performCrawl() Error: ' + err);
-        process.exit();
       });
   };
 
@@ -117,10 +106,8 @@ TestRunController.prototype.testURls = function(runId, urlArray) {
     cronRunModel.endRunWithError(runId, msg)
       .then(function() {
         LogHelper.log('Run finished with an error: ' + err);
-        process.exit();
       }).catch(function(err) {
         LogHelper.log('webperf-monitor performCrawl() Error: ' + err);
-        process.exit();
       });
   };
 
@@ -130,10 +117,8 @@ TestRunController.prototype.testURls = function(runId, urlArray) {
     cronRunModel.endRunSuccessfully(runId, msg)
       .then(function() {
         LogHelper.log('Run finished successfully');
-        process.exit();
       }).catch(function(err) {
         LogHelper.log('webperf-monitor performCrawl() Error: ' + err);
-        process.exit();
       });
   };
 
