@@ -31,7 +31,8 @@ FrontEndController.prototype.setupExpressServer = function() {
   //app.set('view engine', 'hbs');
   app.set('views', path.join(appDir, '/frontend/views'));
   app.engine('handlebars', exphbs({
-    defaultLayout: 'main'
+    defaultLayout: 'main',
+    layoutsDir: path.join(appDir, '/frontend/views/layouts')
   }));
   app.set('view engine', 'handlebars');
 
@@ -41,7 +42,7 @@ FrontEndController.prototype.setupExpressServer = function() {
   }));
 
   app.get('/', function(req, res) {
-    res.render('home');
+    res.render('settings');
   });//this.getIndexRequest.bind(this));
 
   app.use('/styles', express.static(appDir + '/frontend/dist/styles'));

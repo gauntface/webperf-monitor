@@ -53,7 +53,7 @@ if (!config) {
   return;
 }
 
-var testRunController = new TestRunController(configFilePath, config);
-testRunController.startNewRun();
+//var testRunController = new TestRunController(configFilePath, config);
+//testRunController.startNewRun();
 
 new FrontEndController(configFilePath, config);
