@@ -2,11 +2,13 @@
 
 var googleapis = require('googleapis');
 
+var LogHelper = require('./../helper/LogHelper.js');
+
 // H/T to Ian Barber for his help figuring this out
 exports.getVisits = function() {
   var config = require(GLOBAL.configFile);
   if (!config) {
-    console.err('No config file defined.');
+    LogHelper.error('No config file defined.');
     return;
   }
 
@@ -24,7 +26,7 @@ exports.getVisits = function() {
   .discover('analytics', 'v3')
   .execute(function(err, data) {
     if (err) {
-      console.log('analytics-model.js Unable to get analytics API err: ' + JSON.stringify(err));
+      LogHelper.log('analytics-model.js Unable to get analytics API err: ' + JSON.stringify(err));
       return;
     }
 
@@ -32,7 +34,7 @@ exports.getVisits = function() {
 
     jwt.authorize(function(err, result) {
       if (err) {
-        console.log('analytics-model.js JWT Authorize failed err: ' + JSON.stringify(err));
+        LogHelper.log('analytics-model.js JWT Authorize failed err: ' + JSON.stringify(err));
         return;
       }
 
@@ -46,11 +48,11 @@ exports.getVisits = function() {
 			.execute(
 				function(err, result) {
           if (err) {
-            console.log('analytics-model.js Unabled to get data from analytics err: ' + JSON.stringify(err));
+            LogHelper.log('analytics-model.js Unabled to get data from analytics err: ' + JSON.stringify(err));
             return;
           }
 
-          console.log('Result: ' + JSON.stringify(result));
+          LogHelper.log('Result: ' + JSON.stringify(result));
         });
     });
   });

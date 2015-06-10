@@ -2,6 +2,7 @@
 
 var when = require('when');
 var dbHelper = require('./../db/db-helper.js');
+var LogHelper = require('./../helper/LogHelper.js');
 
 exports.addResult = function(runId, url, data) {
   return when.promise(function(resolve, reject, notify) {
@@ -56,7 +57,7 @@ function getURLID(url, dbConnection) {
 
         if (result.length > 1) {
           // TODO: Add warning message to the run
-          console.log('WARNING: URL seems to have multiple ID\'s');
+          LogHelper.log('WARNING: URL seems to have multiple ID\'s');
 
           resolve(result[0]['url_id']);
           return;
@@ -119,10 +120,6 @@ function addRunUrlEntry(runId, urlId, data, dbConnection) {
       if (optionalParams[i].value) {
         params[optionalParams[i].key] = optionalParams[i].value;
       }
-    }
-
-    if (data.pageStats.totalRequestBytes) {
-      console.log('PSIResults: data.pageStats.totalRequestBytes = ' + data.pageStats.totalRequestBytes);
     }
 
     dbConnection.query('INSERT INTO run_entries SET ?', params,

@@ -3,18 +3,19 @@
   "description": "A simple tool which crawls a sitemap and gets a PageSpeed Insight score for each page",
   "version": "0.0.8",
   "bin": {
-    "webperfmonitor": "cli.js"
+    "webperfmonitor": "app.js"
   },
   "dependencies": {
-    "webperf-lib-psi": "~0.0.3",
     "minimist": "~0.2.0",
     "mysql": "~2.0.x",
     "when": "~3.3.1",
-    "googleapis": "~0.8.0"
+    "chalk": "~1.0.0",
+    "gpagespeed": "^0.0.7",
+    "xml2js": "~0.4.9",
+    "googleapis": "~2.0.5"
   },
-  "devDependencies": {
-  },
-  "main": "index.js",
+  "devDependencies": {},
+  "main": "app.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },

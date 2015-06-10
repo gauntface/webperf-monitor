@@ -2,12 +2,14 @@
 'use strict';
 // Adapted from cli.js in gpagespeed
 
-var pkg = require('./package.json');
-
 var argv = require('minimist')(process.argv.slice(2));
 
+var pkg = require('./package.json');
+var LogHelper = require('./helper/LogHelper.js');
+var TestRunController = require('./controller/TestRunController');
+
 var printHelp = function() {
-  console.log([
+  LogHelper.log([
     'webperf-monitor',
         pkg.description,
         '',
@@ -17,7 +19,7 @@ var printHelp = function() {
 };
 
 if (argv.v || argv.version) {
-  console.log(pkg.version);
+  LogHelper.log(pkg.version);
   return;
 }
 
@@ -37,7 +39,7 @@ if (configFilePath.indexOf('.') === 0) {
   configFilePath = __dirname + configFilePath;
 }
 
-console.log('Looking for config file at ' + configFilePath);
+LogHelper.log('Looking for config file at ' + configFilePath);
 
 var config;
 try {
@@ -45,11 +47,10 @@ try {
 } catch (exception) {}
 
 if (!config) {
-  console.error('No config file could be found.');
+  LogHelper.error('No config file could be found.');
   process.exit();
   return;
 }
 
-var webperfmonitor = require('./index');
-
-new webperfmonitor(configFilePath, config);
+var testRunController = new TestRunController(configFilePath, config);
+testRunController.startNewRun();

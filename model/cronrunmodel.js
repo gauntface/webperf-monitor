@@ -2,6 +2,7 @@
 
 // SEE: http://www.openlogic.com/wazi/bid/342452/Promises-for-better-Node-js-coding
 var when = require('when');
+
 var dbHelper = require('./../db/db-helper.js');
 
 function insertNewRun(dbConnection, resolve, reject) {
